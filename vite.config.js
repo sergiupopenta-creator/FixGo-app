@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  // GitHub Pages serves this project from https://<user>.github.io/FixGo-app/,
-  // so all asset URLs need this prefix.
-  base: '/FixGo-app/',
+  // Relative base: works both on GitHub Pages (served under /FixGo-app/)
+  // and when the built dist/ folder is opened locally (e.g. via Live Server).
+  base: './',
 });
