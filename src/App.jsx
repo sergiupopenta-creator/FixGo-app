@@ -1,57 +1,60 @@
-import { useRef, useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
 import { useLocation, useNavigate, matchPath } from 'react-router-dom';
-import { Briefcase, Calendar as CalendarIcon, Home, LayoutGrid, MessageCircle, Plus, Search, User } from 'lucide-react';
+import { Briefcase, Calendar as CalendarIcon, Home, LayoutGrid, Loader2, MessageCircle, Plus, Search, User } from 'lucide-react';
 import { INITIAL_ADDRESSES, INITIAL_APPOINTMENTS, INITIAL_CHATS, INITIAL_DAILY_EARNINGS, INITIAL_EMPLOYEES, INITIAL_JOBS, INITIAL_NOTIFICATIONS, INITIAL_PAYMENT_METHODS, INITIAL_QUICK_TASKS, INITIAL_REQUESTS, WORKERS } from './data/mockData';
 import { C, GRADIENT } from './styles/theme';
 import { ROUTES, buildPath, parseId } from './routes';
 import { usePersistentState } from './utils/usePersistentState';
 import { getSession, clearSession } from './utils/auth';
+// AuthScreen is the very first thing shown, so it stays in the main bundle;
+// every other screen is fetched on demand (see the Suspense boundary below).
 import AuthScreen from './pages/AuthScreen';
-import AccountScreen from './pages/AccountScreen';
-import AddressesScreen from './pages/AddressesScreen';
 import BottomNav from './components/BottomNav';
-import ChatScreen from './pages/ChatScreen';
-import ClientMaterialsListsScreen from './pages/ClientMaterialsListsScreen';
-import ContactProfileScreen from './pages/ContactProfileScreen';
-import EarningsScreen from './pages/EarningsScreen';
-import EditJobScreen from './pages/EditJobScreen';
-import EditProfileScreen from './pages/EditProfileScreen';
-import EmployeeProfileScreen from './pages/EmployeeProfileScreen';
 import EmptyState from './components/EmptyState';
-import EstimateResultScreen from './pages/EstimateResultScreen';
-import EstimatorScreen from './pages/EstimatorScreen';
-import FavoritesScreen from './pages/FavoritesScreen';
-import HelpScreen from './pages/HelpScreen';
-import HomeScreen from './pages/HomeScreen';
-import JobDetailsScreen from './pages/JobDetailsScreen';
-import JobsScreen from './pages/JobsScreen';
-import LocationPickerScreen from './pages/LocationPickerScreen';
-import MaterialsDetailScreen from './pages/MaterialsDetailScreen';
-import MaterialsHubScreen from './pages/MaterialsHubScreen';
-import MaterialsInvestedScreen from './pages/MaterialsInvestedScreen';
-import MaterialsListScreen from './pages/MaterialsListScreen';
-import MessagesScreen from './pages/MessagesScreen';
-import MyNotesDetailScreen from './pages/MyNotesDetailScreen';
-import MyNotesListScreen from './pages/MyNotesListScreen';
-import MyReviewsScreen from './pages/MyReviewsScreen';
-import NewAppointmentScreen from './pages/NewAppointmentScreen';
-import NotificationsScreen from './pages/NotificationsScreen';
-import PaymentMethodsScreen from './pages/PaymentMethodsScreen';
-import PostJobScreen from './pages/PostJobScreen';
-import ProCalendarScreen from './pages/ProCalendarScreen';
-import ProDashboardScreen from './pages/ProDashboardScreen';
-import ProEmployeesScreen from './pages/ProEmployeesScreen';
-import ProJobsScreen from './pages/ProJobsScreen';
-import ProProfileScreen from './pages/ProProfileScreen';
-import ProRequestsScreen from './pages/ProRequestsScreen';
-import ProStatsScreen from './pages/ProStatsScreen';
-import ProSubscriptionsScreen from './pages/ProSubscriptionsScreen';
-import QuickTaskScreen from './pages/QuickTaskScreen';
-import QuickTasksScreen from './pages/QuickTasksScreen';
-import SearchScreen from './pages/SearchScreen';
-import SettingsScreen from './pages/SettingsScreen';
 import ShareSheet from './components/ShareSheet';
-import WorkerProfileScreen from './pages/WorkerProfileScreen';
+
+const AccountScreen = lazy(() => import('./pages/AccountScreen'));
+const AddressesScreen = lazy(() => import('./pages/AddressesScreen'));
+const ChatScreen = lazy(() => import('./pages/ChatScreen'));
+const ClientMaterialsListsScreen = lazy(() => import('./pages/ClientMaterialsListsScreen'));
+const ContactProfileScreen = lazy(() => import('./pages/ContactProfileScreen'));
+const EarningsScreen = lazy(() => import('./pages/EarningsScreen'));
+const EditJobScreen = lazy(() => import('./pages/EditJobScreen'));
+const EditProfileScreen = lazy(() => import('./pages/EditProfileScreen'));
+const EmployeeProfileScreen = lazy(() => import('./pages/EmployeeProfileScreen'));
+const EstimateResultScreen = lazy(() => import('./pages/EstimateResultScreen'));
+const EstimatorScreen = lazy(() => import('./pages/EstimatorScreen'));
+const FavoritesScreen = lazy(() => import('./pages/FavoritesScreen'));
+const HelpScreen = lazy(() => import('./pages/HelpScreen'));
+const HomeScreen = lazy(() => import('./pages/HomeScreen'));
+const JobDetailsScreen = lazy(() => import('./pages/JobDetailsScreen'));
+const JobsScreen = lazy(() => import('./pages/JobsScreen'));
+const LocationPickerScreen = lazy(() => import('./pages/LocationPickerScreen'));
+const MaterialsDetailScreen = lazy(() => import('./pages/MaterialsDetailScreen'));
+const MaterialsHubScreen = lazy(() => import('./pages/MaterialsHubScreen'));
+const MaterialsInvestedScreen = lazy(() => import('./pages/MaterialsInvestedScreen'));
+const MaterialsListScreen = lazy(() => import('./pages/MaterialsListScreen'));
+const MessagesScreen = lazy(() => import('./pages/MessagesScreen'));
+const MyNotesDetailScreen = lazy(() => import('./pages/MyNotesDetailScreen'));
+const MyNotesListScreen = lazy(() => import('./pages/MyNotesListScreen'));
+const MyReviewsScreen = lazy(() => import('./pages/MyReviewsScreen'));
+const NewAppointmentScreen = lazy(() => import('./pages/NewAppointmentScreen'));
+const NotificationsScreen = lazy(() => import('./pages/NotificationsScreen'));
+const PaymentMethodsScreen = lazy(() => import('./pages/PaymentMethodsScreen'));
+const PostJobScreen = lazy(() => import('./pages/PostJobScreen'));
+const ProCalendarScreen = lazy(() => import('./pages/ProCalendarScreen'));
+const ProDashboardScreen = lazy(() => import('./pages/ProDashboardScreen'));
+const ProEmployeesScreen = lazy(() => import('./pages/ProEmployeesScreen'));
+const ProJobsScreen = lazy(() => import('./pages/ProJobsScreen'));
+const ProProfileScreen = lazy(() => import('./pages/ProProfileScreen'));
+const ProRequestsScreen = lazy(() => import('./pages/ProRequestsScreen'));
+const ProStatsScreen = lazy(() => import('./pages/ProStatsScreen'));
+const ProSubscriptionsScreen = lazy(() => import('./pages/ProSubscriptionsScreen'));
+const QuickTaskScreen = lazy(() => import('./pages/QuickTaskScreen'));
+const QuickTasksScreen = lazy(() => import('./pages/QuickTasksScreen'));
+const SearchScreen = lazy(() => import('./pages/SearchScreen'));
+const SettingsScreen = lazy(() => import('./pages/SettingsScreen'));
+const WorkerProfileScreen = lazy(() => import('./pages/WorkerProfileScreen'));
 
 export default function App() {
   const navigate = useNavigate();
@@ -615,7 +618,9 @@ export default function App() {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {body}
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center py-20"><Loader2 size={22} className="animate-spin" color={C.textFaint} /></div>}>
+            {body}
+          </Suspense>
         </div>
         {loggedIn && current.screen === 'jobs' && (
           <button onClick={() => push('postJob', {})} style={{
