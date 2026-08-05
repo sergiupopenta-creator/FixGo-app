@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Ban, Bell, BellOff, Briefcase, Calendar as CalendarIcon, Camera, ChevronRight, ClipboardList, FileText, MapPin, MoreVertical, Send, User } from 'lucide-react';
 import { C, GRADIENT, MONO, inputStyle } from '../styles/theme';
 import { fmt } from '../utils/helpers';
+import { compressImage } from '../utils/compressImage';
 import Avatar from '../components/Avatar';
 import BackButton from '../components/BackButton';
 
@@ -18,13 +19,11 @@ export default function ChatScreen({ chat, goBack, onSend, onOpenMaterials, onOp
     setText('');
   }
 
-  function handlePickImage(e) {
+  async function handlePickImage(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => { onSend({ type: 'image', url: reader.result }); };
-    reader.readAsDataURL(file);
     e.target.value = '';
+    onSend({ type: 'image', url: await compressImage(file) });
   }
 
   return (

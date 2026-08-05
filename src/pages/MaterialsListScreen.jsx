@@ -3,6 +3,7 @@ import { Camera, FileText, Loader2, Plus, Search, X } from 'lucide-react';
 import { C, GRADIENT, MONO, inputStyle } from '../styles/theme';
 import { fmt } from '../utils/helpers';
 import { callAI } from '../utils/aiClient';
+import { compressImage } from '../utils/compressImage';
 import Avatar from '../components/Avatar';
 import BackButton from '../components/BackButton';
 import EmptyState from '../components/EmptyState';
@@ -32,15 +33,12 @@ export default function MaterialsListScreen({ workerId, workerName, clients, ini
     setItems(list => list.filter(i => i.id !== id));
   }
 
-  function handlePickPhoto(e) {
+  async function handlePickPhoto(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setAttachments(list => [...list, { id: Date.now(), type: 'image', url: reader.result, name: file.name }]);
-    };
-    reader.readAsDataURL(file);
     e.target.value = '';
+    const url = await compressImage(file);
+    setAttachments(list => [...list, { id: Date.now(), type: 'image', url, name: file.name }]);
   }
 
   function handlePickPdf(e) {

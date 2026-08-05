@@ -1,16 +1,15 @@
 import { useRef } from 'react';
 import { Camera, X } from 'lucide-react';
 import { C } from '../styles/theme';
+import { compressImage } from '../utils/compressImage';
 
 export default function MyPortfolioGrid({ photos, onAdd, onRemove }) {
   const fileInputRef = useRef(null);
-  function handlePick(e) {
+  async function handlePick(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => onAdd(reader.result);
-    reader.readAsDataURL(file);
     e.target.value = '';
+    onAdd(await compressImage(file));
   }
   return (
     <div className="grid grid-cols-3 gap-2">

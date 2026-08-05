@@ -581,6 +581,8 @@ export default function App() {
           onSwitchMode={() => switchMode('client')}
           profileInfo={profileInfo}
           onUpdateBio={(bio) => setProfileInfo(p => ({ ...p, bio }))}
+          onUpdateCoverPhoto={(coverPhoto) => setProfileInfo(p => ({ ...p, coverPhoto }))}
+          onUpdateCompanyName={(companyName) => setProfileInfo(p => ({ ...p, companyName }))}
           onAddService={addService}
           onRemoveService={removeService}
           onLogout={handleLogout}

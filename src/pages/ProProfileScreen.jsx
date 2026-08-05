@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Camera, ChevronRight, ClipboardList, CreditCard, HelpCircle, Home, LogOut, Pencil, Plus, Settings, TrendingUp, User, Users, X } from 'lucide-react';
 import { C, GRADIENT, inputStyle } from '../styles/theme';
+import { compressImage } from '../utils/compressImage';
 import EditableAvatar from '../components/EditableAvatar';
 import MyPortfolioGrid from '../components/MyPortfolioGrid';
 import Rating from '../components/Rating';
@@ -33,13 +34,11 @@ export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChan
     setNewService('');
   }
 
-  function handleCoverPick(e) {
+  async function handleCoverPick(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => onUpdateCoverPhoto(reader.result);
-    reader.readAsDataURL(file);
     e.target.value = '';
+    onUpdateCoverPhoto(await compressImage(file, { maxDimension: 1280 }));
   }
 
   function saveCompanyName() {
