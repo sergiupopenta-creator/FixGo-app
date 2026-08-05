@@ -31,6 +31,8 @@ export const ROUTES = [
   { screen: 'notifications', path: '/notifications' },
   { screen: 'settings', path: '/settings' },
   { screen: 'help', path: '/help' },
+  { screen: 'terms', path: '/legal/terms' },
+  { screen: 'privacy', path: '/legal/privacy' },
   { screen: 'proDashboard', path: '/pro' },
   { screen: 'proRequests', path: '/pro/requests' },
   { screen: 'proCalendar', path: '/pro/calendar' },

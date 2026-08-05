@@ -54,6 +54,8 @@ const QuickTaskScreen = lazy(() => import('./pages/QuickTaskScreen'));
 const QuickTasksScreen = lazy(() => import('./pages/QuickTasksScreen'));
 const SearchScreen = lazy(() => import('./pages/SearchScreen'));
 const SettingsScreen = lazy(() => import('./pages/SettingsScreen'));
+const TermsScreen = lazy(() => import('./pages/TermsScreen'));
+const PrivacyScreen = lazy(() => import('./pages/PrivacyScreen'));
 const WorkerProfileScreen = lazy(() => import('./pages/WorkerProfileScreen'));
 
 export default function App() {
@@ -495,9 +497,13 @@ export default function App() {
     case 'notifications':
       body = <NotificationsScreen notifications={notifications} onMarkRead={markNotificationsRead} push={push} goBack={goBack} />; break;
     case 'settings':
-      body = <SettingsScreen settings={settings} onChange={updateSetting} goBack={goBack} />; break;
+      body = <SettingsScreen settings={settings} onChange={updateSetting} goBack={goBack} push={push} />; break;
     case 'help':
       body = <HelpScreen goBack={goBack} />; break;
+    case 'terms':
+      body = <TermsScreen goBack={goBack} />; break;
+    case 'privacy':
+      body = <PrivacyScreen goBack={goBack} />; break;
     case 'proDashboard':
       body = <ProDashboardScreen requests={requests} push={push} plan={plan} employees={employees} profileInfo={profileInfo} hasUnreadNotifications={hasUnreadNotifications} quickTasks={quickTasks} />; break;
     case 'proRequests':
