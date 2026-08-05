@@ -3,7 +3,7 @@ import { C, GRADIENT } from '../styles/theme';
 import EditableAvatar from '../components/EditableAvatar';
 import Rating from '../components/Rating';
 
-export default function AccountScreen({ push, onSwitchMode, profilePhoto, onPhotoChange, profileInfo }) {
+export default function AccountScreen({ push, onSwitchMode, profilePhoto, onPhotoChange, profileInfo, onLogout }) {
   const menu = [
     { label: 'Informațiile mele', icon: User, action: () => push('editProfile', {}) },
     { label: 'Adresele mele', icon: MapPin, action: () => push('addresses', {}) },
@@ -46,7 +46,7 @@ export default function AccountScreen({ push, onSwitchMode, profilePhoto, onPhot
             <ChevronRight size={15} color={C.textFaint} />
           </button>
         ))}
-        <button className="w-full flex items-center gap-3 py-3.5 text-left mt-2">
+        <button onClick={onLogout} className="w-full flex items-center gap-3 py-3.5 text-left mt-2">
           <LogOut size={17} color={C.red} />
           <span className="text-sm" style={{ color: C.red }}>Deconectare</span>
         </button>

@@ -5,7 +5,7 @@ import EditableAvatar from '../components/EditableAvatar';
 import MyPortfolioGrid from '../components/MyPortfolioGrid';
 import Rating from '../components/Rating';
 
-export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChange, portfolio, onAddPortfolioPhoto, onRemovePortfolioPhoto, onSwitchMode, profileInfo, onUpdateBio, onUpdateCoverPhoto, onUpdateCompanyName, onAddService, onRemoveService }) {
+export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChange, portfolio, onAddPortfolioPhoto, onRemovePortfolioPhoto, onSwitchMode, profileInfo, onUpdateBio, onUpdateCoverPhoto, onUpdateCompanyName, onAddService, onRemoveService, onLogout }) {
   const [editingBio, setEditingBio] = useState(false);
   const [bioText, setBioText] = useState(profileInfo.bio || '');
   const [newService, setNewService] = useState('');
@@ -165,7 +165,7 @@ export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChan
       <button onClick={onSwitchMode} style={{ background: C.surface, border: `1px solid ${C.border}` }} className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold mb-2">
         <Home size={15} color={C.text} /> <span style={{ color: C.text }}>Comută la Mod Client</span>
       </button>
-      <button className="w-full flex items-center gap-3 py-3.5 text-left">
+      <button onClick={onLogout} className="w-full flex items-center gap-3 py-3.5 text-left">
         <LogOut size={17} color={C.red} />
         <span className="text-sm" style={{ color: C.red }}>Deconectare</span>
       </button>

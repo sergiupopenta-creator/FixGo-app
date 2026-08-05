@@ -4,6 +4,9 @@ import { Briefcase, Calendar as CalendarIcon, Home, LayoutGrid, MessageCircle, P
 import { INITIAL_ADDRESSES, INITIAL_APPOINTMENTS, INITIAL_CHATS, INITIAL_DAILY_EARNINGS, INITIAL_EMPLOYEES, INITIAL_JOBS, INITIAL_NOTIFICATIONS, INITIAL_PAYMENT_METHODS, INITIAL_QUICK_TASKS, INITIAL_REQUESTS, WORKERS } from './data/mockData';
 import { C, GRADIENT } from './styles/theme';
 import { ROUTES, buildPath, parseId } from './routes';
+import { usePersistentState } from './utils/usePersistentState';
+import { getSession, clearSession } from './utils/auth';
+import AuthScreen from './pages/AuthScreen';
 import AccountScreen from './pages/AccountScreen';
 import AddressesScreen from './pages/AddressesScreen';
 import BottomNav from './components/BottomNav';
@@ -53,34 +56,39 @@ import WorkerProfileScreen from './pages/WorkerProfileScreen';
 export default function App() {
   const navigate = useNavigate();
   const routerLocation = useLocation();
-  const [mode, setMode] = useState('client');
+  const [session, setSession] = useState(() => getSession());
+  // Everything below survives a page refresh (persisted to localStorage) —
+  // only the handful of purely transient UI bits further down stay as plain useState.
+  const [mode, setMode] = usePersistentState('mode', 'client');
+  const [jobs, setJobs] = usePersistentState('jobs', INITIAL_JOBS);
+  const [chats, setChats] = usePersistentState('chats', INITIAL_CHATS);
+  const [requests, setRequests] = usePersistentState('requests', INITIAL_REQUESTS);
+  const [employees, setEmployees] = usePersistentState('employees', INITIAL_EMPLOYEES);
+  const [plan, setPlan] = usePersistentState('plan', 'Premium');
+  const [favorites, setFavorites] = usePersistentState('favorites', []);
+  const [materialsLists, setMaterialsLists] = usePersistentState('materialsLists', {});
+  const [profilePhoto, setProfilePhoto] = usePersistentState('profilePhoto', null);
+  const [myPortfolio, setMyPortfolio] = usePersistentState('myPortfolio', []);
+  const [profileInfo, setProfileInfo] = usePersistentState('profileInfo', { name: 'Andrei Popescu', email: 'andrei.popescu@email.com', phone: '', bio: '', services: ['Instalații electrice', 'Tablouri electrice'] });
+  const [addresses, setAddresses] = usePersistentState('addresses', INITIAL_ADDRESSES);
+  const [paymentMethods, setPaymentMethods] = usePersistentState('paymentMethods', INITIAL_PAYMENT_METHODS);
+  const [notifications, setNotifications] = usePersistentState('notifications', INITIAL_NOTIFICATIONS);
+  const [settings, setSettings] = usePersistentState('settings', { pushNotifications: true, emailUpdates: true, darkMode: true });
+  const [clientReviews, setClientReviews] = usePersistentState('clientReviews', {});
+  const [workerReviews, setWorkerReviews] = usePersistentState('workerReviews', {});
+  const [quickTasks, setQuickTasks] = usePersistentState('quickTasks', INITIAL_QUICK_TASKS);
+  const [location, setLocation] = usePersistentState('location', 'București');
+  const [myMaterialLists, setMyMaterialLists] = usePersistentState('myMaterialLists', []);
+  const [dailyEarnings, setDailyEarnings] = usePersistentState('dailyEarnings', INITIAL_DAILY_EARNINGS);
+  const [appointments, setAppointments] = usePersistentState('appointments', INITIAL_APPOINTMENTS);
+
+  // Transient UI state — deliberately NOT persisted (would be confusing to restore after a refresh).
   const [lastEstimate, setLastEstimate] = useState(null);
   const [viewingMaterialsMessage, setViewingMaterialsMessage] = useState(null);
-  const [jobs, setJobs] = useState(INITIAL_JOBS);
-  const [chats, setChats] = useState(INITIAL_CHATS);
-  const [requests, setRequests] = useState(INITIAL_REQUESTS);
-  const [employees, setEmployees] = useState(INITIAL_EMPLOYEES);
-  const [plan, setPlan] = useState('Premium');
-  const [favorites, setFavorites] = useState([]);
-  const [materialsLists, setMaterialsLists] = useState({});
-  const [profilePhoto, setProfilePhoto] = useState(null);
-  const [myPortfolio, setMyPortfolio] = useState([]);
-  const [profileInfo, setProfileInfo] = useState({ name: 'Andrei Popescu', email: 'andrei.popescu@email.com', phone: '', bio: '', services: ['Instalații electrice', 'Tablouri electrice'] });
-  const [addresses, setAddresses] = useState(INITIAL_ADDRESSES);
-  const [paymentMethods, setPaymentMethods] = useState(INITIAL_PAYMENT_METHODS);
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
-  const [settings, setSettings] = useState({ pushNotifications: true, emailUpdates: true, darkMode: true });
-  const [clientReviews, setClientReviews] = useState({});
-  const [workerReviews, setWorkerReviews] = useState({});
-  const [quickTasks, setQuickTasks] = useState(INITIAL_QUICK_TASKS);
-  const [location, setLocation] = useState('București');
   const [shareSheetWorker, setShareSheetWorker] = useState(null);
-  const [myMaterialLists, setMyMaterialLists] = useState([]);
-  const [dailyEarnings, setDailyEarnings] = useState(INITIAL_DAILY_EARNINGS);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [swiping, setSwiping] = useState(false);
   const touchStartRef = useRef({ x: 0, y: 0, active: false });
-  const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
 
   // Resolve the current screen + its params from the real URL (see src/routes.js),
   // instead of an in-memory navigation stack — this is what makes browser
@@ -194,6 +202,15 @@ export default function App() {
   function switchMode(newMode) {
     setMode(newMode);
     navigate(buildPath(newMode === 'pro' ? 'proDashboard' : 'home', {}));
+  }
+  function handleAuthenticated({ name, email }) {
+    setProfileInfo(p => ({ ...p, name, email }));
+    setSession(email);
+    navigate('/');
+  }
+  function handleLogout() {
+    clearSession();
+    setSession(null);
   }
   function acceptRequest(id) { setRequests(r => r.map(x => x.id === id ? { ...x, status: 'Acceptată' } : x)); }
   function declineRequest(id) { setRequests(r => r.map(x => x.id === id ? { ...x, status: 'Refuzată' } : x)); }
@@ -463,7 +480,7 @@ export default function App() {
     case 'quickTasks':
       body = <QuickTasksScreen quickTasks={quickTasks} onClaim={claimQuickTask} push={push} goBack={goBack} />; break;
     case 'account':
-      body = <AccountScreen push={push} onSwitchMode={() => switchMode('pro')} profilePhoto={profilePhoto} onPhotoChange={setProfilePhoto} profileInfo={profileInfo} />; break;
+      body = <AccountScreen push={push} onSwitchMode={() => switchMode('pro')} profilePhoto={profilePhoto} onPhotoChange={setProfilePhoto} profileInfo={profileInfo} onLogout={handleLogout} />; break;
     case 'editProfile':
       body = <EditProfileScreen profile={profileInfo} onSave={setProfileInfo} goBack={goBack} />; break;
     case 'addresses':
@@ -557,12 +574,16 @@ export default function App() {
           onUpdateBio={(bio) => setProfileInfo(p => ({ ...p, bio }))}
           onAddService={addService}
           onRemoveService={removeService}
+          onLogout={handleLogout}
         />
       );
       break;
     default:
       body = <HomeScreen push={push} firstName={profileInfo.name.split(' ')[0]} hasUnreadNotifications={hasUnreadNotifications} location={location} />;
   }
+
+  const loggedIn = !!session;
+  if (!loggedIn) body = <AuthScreen onAuthenticated={handleAuthenticated} />;
 
   return (
     <div style={{
@@ -596,7 +617,7 @@ export default function App() {
         >
           {body}
         </div>
-        {current.screen === 'jobs' && (
+        {loggedIn && current.screen === 'jobs' && (
           <button onClick={() => push('postJob', {})} style={{
             background: GRADIENT, position: 'absolute', bottom: 78, right: 18, width: 52, height: 52,
             borderRadius: 9999, boxShadow: '0 8px 24px rgba(249,115,22,0.4)', zIndex: 20,
@@ -605,7 +626,7 @@ export default function App() {
             <Plus size={22} color="#fff" />
           </button>
         )}
-        {showBottomNav && <BottomNav tabs={tabs} active={current.screen} onTab={navTab} />}
+        {loggedIn && showBottomNav && <BottomNav tabs={tabs} active={current.screen} onTab={navTab} />}
         {shareSheetWorker && <ShareSheet worker={shareSheetWorker} onClose={() => setShareSheetWorker(null)} />}
       </div>
     </div>
