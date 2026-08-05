@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Camera, FileText, Loader2, Plus, Search, X } from 'lucide-react';
 import { C, GRADIENT, MONO, inputStyle } from '../styles/theme';
 import { fmt } from '../utils/helpers';
+import { callAI } from '../utils/aiClient';
 import Avatar from '../components/Avatar';
 import BackButton from '../components/BackButton';
 import EmptyState from '../components/EmptyState';
@@ -54,29 +55,18 @@ export default function MaterialsListScreen({ workerId, workerName, clients, ini
       try {
         const base64Data = dataUrl.split(',')[1];
         const promptText = 'Ești un asistent care extrage articole (materiale/piese) și costurile lor dintr-o factură pentru un meseriaș din România. Analizează documentul PDF atașat și răspunde DOAR cu un obiect JSON valid, fără text suplimentar, fără markdown, fără backticks, fără explicații înainte sau după. Format exact: {"items":[{"name":"string","qty":number,"price":number}]}. "price" este prețul unitar în RON (calculează total împărțit la cantitate dacă factura arată doar valoarea totală pe linie). Dacă nu poți identifica articole individuale, returnează un singur articol cu denumirea "Materiale conform factură", cantitatea 1 și prețul egal cu totalul general al facturii. Extrage lista de materiale și costul lor din această factură.';
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 1500,
-            messages: [
-              {
-                role: 'user',
-                content: [
-                  { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64Data } },
-                  { type: 'text', text: promptText },
-                ],
-              },
-            ],
-          }),
+        const raw = await callAI({
+          maxTokens: 1500,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64Data } },
+                { type: 'text', text: promptText },
+              ],
+            },
+          ],
         });
-        if (!response.ok) {
-          const errText = await response.text().catch(() => '');
-          throw new Error(`Cerere eșuată (${response.status}) ${errText.slice(0, 150)}`);
-        }
-        const data = await response.json();
-        const raw = (data.content || []).map(b => b.text || '').join('');
         const jsonMatch = raw.match(/\{[\s\S]*\}/);
         const clean = (jsonMatch ? jsonMatch[0] : raw).replace(/```json|```/g, '').trim();
         const parsed = JSON.parse(clean);

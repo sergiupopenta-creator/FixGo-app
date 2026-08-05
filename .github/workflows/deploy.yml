@@ -32,6 +32,11 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Optional: set this repo secret once you've deployed the AI proxy
+          # worker (see worker/README.md). Left unset, AI features show a
+          # clear "not configured" message instead of failing silently.
+          VITE_AI_PROXY_URL: ${{ secrets.VITE_AI_PROXY_URL }}
 
       - name: Upload build artifact
         uses: actions/upload-pages-artifact@v3
