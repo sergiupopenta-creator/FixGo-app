@@ -16,7 +16,7 @@ export default function EditableAvatar({ name, size, photoUrl, onChange }) {
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
       <Avatar name={name} size={size} photoUrl={photoUrl} />
-      <button onClick={() => fileInputRef.current?.click()} style={{
+      <button onClick={() => fileInputRef.current?.click()} aria-label="Schimbă poza de profil" style={{
         position: 'absolute', bottom: -2, right: -2, width: Math.round(size * 0.34), height: Math.round(size * 0.34),
         borderRadius: 9999, background: C.purple, border: `2px solid ${C.bg}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,

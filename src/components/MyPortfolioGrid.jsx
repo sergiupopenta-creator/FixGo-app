@@ -17,7 +17,7 @@ export default function MyPortfolioGrid({ photos, onAdd, onRemove }) {
       {photos.map((url, i) => (
         <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: 12, overflow: 'hidden' }}>
           <img src={url} alt="lucrare" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          <button onClick={() => onRemove(i)} style={{
+          <button onClick={() => onRemove(i)} aria-label="Șterge poza" style={{
             position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: 9999,
             background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
           }}>
@@ -25,7 +25,7 @@ export default function MyPortfolioGrid({ photos, onAdd, onRemove }) {
           </button>
         </div>
       ))}
-      <button onClick={() => fileInputRef.current?.click()} style={{
+      <button onClick={() => fileInputRef.current?.click()} aria-label="Adaugă o poză în portofoliu" style={{
         aspectRatio: '1', borderRadius: 12, border: `1px dashed ${C.border}`, background: 'transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>

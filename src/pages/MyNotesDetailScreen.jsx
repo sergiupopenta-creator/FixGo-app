@@ -33,7 +33,7 @@ export default function MyNotesDetailScreen({ list, onUpdateItems, onDelete, goB
           <BackButton onClick={goBack} />
           <h1 className="text-base font-semibold truncate" style={{ color: C.text }}>{list.title}</h1>
         </div>
-        <button onClick={() => { onDelete(list.id); goBack(); }} style={{ background: C.surface2 }} className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0">
+        <button onClick={() => { onDelete(list.id); goBack(); }} aria-label="Șterge lista" style={{ background: C.surface2 }} className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0">
           <Trash2 size={15} color={C.red} />
         </button>
       </div>
@@ -48,7 +48,7 @@ export default function MyNotesDetailScreen({ list, onUpdateItems, onDelete, goB
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <span className="text-sm font-semibold" style={{ color: C.purple, fontFamily: MONO }}>{fmt(item.qty * item.price)} RON</span>
-              <button onClick={() => removeItem(item.id)} style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center">
+              <button onClick={() => removeItem(item.id)} aria-label={`Șterge ${item.name}`} style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center">
                 <X size={13} color={C.textMuted} />
               </button>
             </div>

@@ -33,7 +33,7 @@ export default function PaymentMethodsScreen({ methods, onAdd, onRemove, goBack 
               <div className="text-sm font-semibold" style={{ color: C.text }}>{m.brand} •••• {m.last4}</div>
               <div className="text-xs" style={{ color: C.textMuted }}>Expiră {m.expiry}</div>
             </div>
-            <button onClick={() => onRemove(m.id)} style={{ background: C.surface2 }} className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
+            <button onClick={() => onRemove(m.id)} aria-label={`Șterge cardul ${m.brand} terminat în ${m.last4}`} style={{ background: C.surface2 }} className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
               <Trash2 size={14} color={C.red} />
             </button>
           </div>

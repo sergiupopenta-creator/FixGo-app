@@ -59,7 +59,7 @@ export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChan
             </span>
           </div>
         )}
-        <button onClick={() => coverInputRef.current?.click()} style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.55)' }} className="w-8 h-8 rounded-full flex items-center justify-center">
+        <button onClick={() => coverInputRef.current?.click()} aria-label="Schimbă poza de copertă" style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.55)' }} className="w-8 h-8 rounded-full flex items-center justify-center">
           <Camera size={15} color="#fff" />
         </button>
         <input ref={coverInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleCoverPick} />
@@ -95,7 +95,7 @@ export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChan
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-sm font-semibold" style={{ color: C.text }}>Biografie</h2>
           {!editingBio && (
-            <button onClick={() => { setBioText(profileInfo.bio || ''); setEditingBio(true); }} style={{ background: 'none', border: 'none', padding: 0 }}>
+            <button onClick={() => { setBioText(profileInfo.bio || ''); setEditingBio(true); }} aria-label="Editează biografia" style={{ background: 'none', border: 'none', padding: 0 }}>
               <Pencil size={14} color={C.purple} />
             </button>
           )}
@@ -126,7 +126,7 @@ export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChan
             {profileInfo.services.map((s, i) => (
               <span key={i} style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="flex items-center gap-1.5 text-xs pl-3 pr-2 py-1.5 rounded-full">
                 <span style={{ color: C.text }}>{s}</span>
-                <button onClick={() => onRemoveService(i)} style={{ background: 'none', border: 'none', padding: 0 }} className="flex items-center justify-center">
+                <button onClick={() => onRemoveService(i)} aria-label={`Șterge serviciul ${s}`} style={{ background: 'none', border: 'none', padding: 0 }} className="flex items-center justify-center">
                   <X size={11} color={C.textMuted} />
                 </button>
               </span>

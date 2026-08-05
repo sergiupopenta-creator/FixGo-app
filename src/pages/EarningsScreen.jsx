@@ -71,11 +71,11 @@ export default function EarningsScreen({ dailyEarnings, onAddEarning, push, goBa
 
       <div style={{ background: C.surface, border: `1px solid ${C.border}` }} className="rounded-2xl p-4 mb-5">
         <div className="flex items-center justify-between mb-3">
-          <button onClick={() => changeMonth(-1)} style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center">
+          <button onClick={() => changeMonth(-1)} aria-label="Luna anterioară" style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center">
             <ChevronLeft size={14} color={C.text} />
           </button>
           <span className="text-sm font-semibold" style={{ color: C.text }}>{MONTHS_RO[month]} {year}</span>
-          <button onClick={() => changeMonth(1)} style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center">
+          <button onClick={() => changeMonth(1)} aria-label="Luna următoare" style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center">
             <ChevronRight size={14} color={C.text} />
           </button>
         </div>

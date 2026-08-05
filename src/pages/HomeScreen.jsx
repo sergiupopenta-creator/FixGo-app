@@ -12,7 +12,7 @@ export default function HomeScreen({ push, firstName, hasUnreadNotifications, lo
           <span className="text-xs font-medium">{location}, România</span>
           <ChevronDown size={14} />
         </button>
-        <button onClick={() => push('notifications', {})} style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="w-9 h-9 rounded-full flex items-center justify-center relative">
+        <button onClick={() => push('notifications', {})} aria-label="Notificări" style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="w-9 h-9 rounded-full flex items-center justify-center relative">
           <Bell size={16} color={C.text} />
           {hasUnreadNotifications && <span style={{ background: C.red, position: 'absolute', top: 7, right: 8 }} className="w-1.5 h-1.5 rounded-full" />}
         </button>

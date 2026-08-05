@@ -623,7 +623,7 @@ export default function App() {
           </Suspense>
         </div>
         {loggedIn && current.screen === 'jobs' && (
-          <button onClick={() => push('postJob', {})} style={{
+          <button onClick={() => push('postJob', {})} aria-label="Postează o lucrare nouă" style={{
             background: GRADIENT, position: 'absolute', bottom: 78, right: 18, width: 52, height: 52,
             borderRadius: 9999, boxShadow: '0 8px 24px rgba(249,115,22,0.4)', zIndex: 20,
             display: 'flex', alignItems: 'center', justifyContent: 'center',

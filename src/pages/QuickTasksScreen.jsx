@@ -23,7 +23,7 @@ export default function QuickTasksScreen({ quickTasks, onClaim, push, goBack }) 
                   <div className="text-xs truncate" style={{ color: C.textMuted }}>{t.address}</div>
                 </div>
               </button>
-              <button onClick={() => push('chat', { workerId: t.clientId, workerName: t.clientName })} style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
+              <button onClick={() => push('chat', { workerId: t.clientId, workerName: t.clientName })} aria-label={`Trimite mesaj către ${t.clientName}`} style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
                 <MessageCircle size={13} color={C.text} />
               </button>
             </div>

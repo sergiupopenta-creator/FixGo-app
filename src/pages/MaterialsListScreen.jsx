@@ -110,7 +110,7 @@ export default function MaterialsListScreen({ workerId, workerName, clients, ini
                 <Avatar name={selectedClient.clientName} size={32} />
                 <span className="text-sm" style={{ color: C.text }}>{selectedClient.clientName}</span>
               </div>
-              <button onClick={() => setSelectedClient(null)} style={{ background: 'none', border: 'none', padding: 0 }}>
+              <button onClick={() => setSelectedClient(null)} aria-label="Anulează selecția" style={{ background: 'none', border: 'none', padding: 0 }}>
                 <X size={16} color={C.textMuted} />
               </button>
             </div>
@@ -151,7 +151,7 @@ export default function MaterialsListScreen({ workerId, workerName, clients, ini
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <span className="text-sm font-semibold" style={{ color: C.purple, fontFamily: MONO }}>{fmt(item.qty * item.price)} RON</span>
-              <button onClick={() => removeItem(item.id)} style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center">
+              <button onClick={() => removeItem(item.id)} aria-label={`Șterge ${item.name}`} style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center">
                 <X size={13} color={C.textMuted} />
               </button>
             </div>
@@ -187,7 +187,7 @@ export default function MaterialsListScreen({ workerId, workerName, clients, ini
                   </div>
                 )}
                 <span className="text-xs flex-1 truncate" style={{ color: C.text }}>{att.name}</span>
-                <button onClick={() => removeAttachment(att.id)} style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
+                <button onClick={() => removeAttachment(att.id)} aria-label={`Șterge atașamentul ${att.name}`} style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
                   <X size={13} color={C.textMuted} />
                 </button>
               </div>

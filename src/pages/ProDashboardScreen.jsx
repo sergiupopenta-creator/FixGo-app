@@ -13,7 +13,7 @@ export default function ProDashboardScreen({ requests, push, plan, employees, pr
           <div className="text-xs" style={{ color: C.textMuted }}>Bun venit înapoi</div>
           <h1 className="text-xl font-bold" style={{ color: C.text, letterSpacing: '-0.02em' }}>{profileInfo.name}</h1>
         </div>
-        <button onClick={() => push('notifications', {})} style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="w-9 h-9 rounded-full flex items-center justify-center relative">
+        <button onClick={() => push('notifications', {})} aria-label="Notificări" style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="w-9 h-9 rounded-full flex items-center justify-center relative">
           <Bell size={16} color={C.text} />
           {hasUnreadNotifications && <span style={{ background: C.red, position: 'absolute', top: 7, right: 8 }} className="w-1.5 h-1.5 rounded-full" />}
         </button>
