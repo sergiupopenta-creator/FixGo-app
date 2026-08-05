@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
+import { useLocation, useNavigate, matchPath } from 'react-router-dom';
 import { Briefcase, Calendar as CalendarIcon, Home, LayoutGrid, MessageCircle, Plus, Search, User } from 'lucide-react';
 import { INITIAL_ADDRESSES, INITIAL_APPOINTMENTS, INITIAL_CHATS, INITIAL_DAILY_EARNINGS, INITIAL_EMPLOYEES, INITIAL_JOBS, INITIAL_NOTIFICATIONS, INITIAL_PAYMENT_METHODS, INITIAL_QUICK_TASKS, INITIAL_REQUESTS, WORKERS } from './data/mockData';
 import { C, GRADIENT } from './styles/theme';
+import { ROUTES, buildPath, parseId } from './routes';
 import AccountScreen from './pages/AccountScreen';
 import AddressesScreen from './pages/AddressesScreen';
 import BottomNav from './components/BottomNav';
@@ -49,8 +51,11 @@ import ShareSheet from './components/ShareSheet';
 import WorkerProfileScreen from './pages/WorkerProfileScreen';
 
 export default function App() {
+  const navigate = useNavigate();
+  const routerLocation = useLocation();
   const [mode, setMode] = useState('client');
-  const [stack, setStack] = useState([{ screen: 'home', params: {} }]);
+  const [lastEstimate, setLastEstimate] = useState(null);
+  const [viewingMaterialsMessage, setViewingMaterialsMessage] = useState(null);
   const [jobs, setJobs] = useState(INITIAL_JOBS);
   const [chats, setChats] = useState(INITIAL_CHATS);
   const [requests, setRequests] = useState(INITIAL_REQUESTS);
@@ -77,15 +82,87 @@ export default function App() {
   const touchStartRef = useRef({ x: 0, y: 0, active: false });
   const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
 
-  const current = stack[stack.length - 1];
+  // Resolve the current screen + its params from the real URL (see src/routes.js),
+  // instead of an in-memory navigation stack — this is what makes browser
+  // back/forward and shareable/refreshable links work.
+  const routeQuery = new URLSearchParams(routerLocation.search);
+  let matchedScreen = 'home';
+  let routeParams = {};
+  for (const route of ROUTES) {
+    const match = matchPath({ path: route.path, end: true }, routerLocation.pathname);
+    if (match) { matchedScreen = route.screen; routeParams = match.params; break; }
+  }
+
+  let currentScreen = matchedScreen;
+  let currentParams = {};
+  switch (matchedScreen) {
+    case 'search':
+      currentParams = { category: routeQuery.get('category') || undefined };
+      break;
+    case 'worker':
+      currentParams = { worker: WORKERS.find(w => w.id === parseId(routeParams.workerId)) };
+      if (!currentParams.worker) currentScreen = 'home';
+      break;
+    case 'postJob': {
+      const workerId = routeQuery.get('workerId');
+      currentParams = { worker: workerId ? WORKERS.find(w => w.id === parseId(workerId)) : undefined };
+      break;
+    }
+    case 'jobDetails':
+      currentParams = { job: { id: parseId(routeParams.jobId) } };
+      break;
+    case 'editJob':
+      currentParams = { job: jobs.find(j => j.id === parseId(routeParams.jobId)) };
+      if (!currentParams.job) currentScreen = 'home';
+      break;
+    case 'chat':
+      currentParams = { workerId: parseId(routeParams.workerId), workerName: routeQuery.get('name') || undefined };
+      break;
+    case 'materialsList':
+      currentParams = { workerId: parseId(routeParams.workerId), workerName: routeQuery.get('name') || undefined };
+      break;
+    case 'materialsDetail':
+      currentParams = { message: viewingMaterialsMessage };
+      break;
+    case 'estimateResult':
+      currentParams = { result: lastEstimate };
+      break;
+    case 'newAppointment':
+      currentParams = {
+        dateKey: routeQuery.get('date') || undefined,
+        dayLabel: routeQuery.get('dayLabel') || undefined,
+        clientId: routeQuery.get('clientId') || undefined,
+        clientName: routeQuery.get('clientName') || undefined,
+      };
+      break;
+    case 'proJobs':
+      currentParams = { tab: routeQuery.get('tab') || undefined };
+      break;
+    case 'employeeProfile':
+      currentParams = { employeeId: parseId(routeParams.employeeId) };
+      break;
+    case 'contactProfile':
+      currentParams = { name: routeQuery.get('name') || undefined, clientId: parseId(routeParams.clientId) };
+      break;
+    case 'myNotesDetail':
+      currentParams = { listId: parseId(routeParams.listId) };
+      break;
+    default:
+      currentParams = {};
+  }
+  const current = { screen: currentScreen, params: currentParams };
   const hasUnreadNotifications = notifications.some(n => !n.read);
 
-  function push(screen, params = {}) { setStack(s => [...s, { screen, params }]); }
-  function goBack() { setStack(s => (s.length > 1 ? s.slice(0, -1) : s)); }
-  function navTab(screen) { setStack([{ screen, params: {} }]); }
+  function push(screen, params = {}) {
+    if (screen === 'estimateResult') setLastEstimate(params.result);
+    if (screen === 'materialsDetail') setViewingMaterialsMessage(params.message);
+    navigate(buildPath(screen, params));
+  }
+  function goBack() { navigate(-1); }
+  function navTab(screen) { navigate(buildPath(screen, {})); }
 
   function handleTouchStart(e) {
-    if (stack.length <= 1) return;
+    if (routerLocation.pathname === '/') return;
     const touch = e.touches[0];
     const rect = e.currentTarget.getBoundingClientRect();
     const relativeX = touch.clientX - rect.left;
@@ -116,7 +193,7 @@ export default function App() {
   }
   function switchMode(newMode) {
     setMode(newMode);
-    setStack([{ screen: newMode === 'pro' ? 'proDashboard' : 'home', params: {} }]);
+    navigate(buildPath(newMode === 'pro' ? 'proDashboard' : 'home', {}));
   }
   function acceptRequest(id) { setRequests(r => r.map(x => x.id === id ? { ...x, status: 'Acceptată' } : x)); }
   function declineRequest(id) { setRequests(r => r.map(x => x.id === id ? { ...x, status: 'Refuzată' } : x)); }

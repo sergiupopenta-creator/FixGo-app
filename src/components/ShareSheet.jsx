@@ -28,7 +28,7 @@ export default function ShareSheet({ worker, onClose }) {
       textarea.select();
       ok = document.execCommand('copy');
       document.body.removeChild(textarea);
-    } catch (err) { ok = false; }
+    } catch { ok = false; }
     if (ok) {
       setCopied(true);
       setTimeout(() => { setCopied(false); onClose(); }, 900);
@@ -45,7 +45,7 @@ export default function ShareSheet({ worker, onClose }) {
       try {
         await navigator.share({ title: `${worker.name} - FixGo`, text: shareText, url: shareUrl });
         return;
-      } catch (err) { /* utilizatorul a anulat sau share nu e permis aici */ }
+      } catch { /* utilizatorul a anulat sau share nu e permis aici */ }
     }
     copyToClipboard();
   }
