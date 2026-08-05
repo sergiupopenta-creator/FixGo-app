@@ -6,4 +6,9 @@ export default defineConfig({
   // Relative base: works both on GitHub Pages (served under /FixGo-app/)
   // and when the built dist/ folder is opened locally (e.g. via Live Server).
   base: './',
+  test: {
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.js',
+    globals: true,
+  },
 });
