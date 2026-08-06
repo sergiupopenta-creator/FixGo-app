@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Bot, ChevronDown, Loader2, Send } from 'lucide-react';
 import { FAQ_ITEMS } from '../data/mockData';
 import { C, GRADIENT } from '../styles/theme';
+import { callAI } from '../utils/aiClient';
 import BackButton from '../components/BackButton';
 
 export default function HelpScreen({ goBack }) {
@@ -21,21 +22,7 @@ export default function HelpScreen({ goBack }) {
     setLoading(true);
     try {
       const prompt = 'Ești asistentul virtual al aplicației FixGo, o platformă românească ce conectează clienți cu meseriași (electricieni, instalatori, zugravi, mecanici auto, avocați, notari etc). Rolul tău este să ajuți orice utilizator - client sau meseriaș - să înțeleagă cum să folosească aplicația și să rezolve problemele pe care le întâmpină.\n\nStructura aplicației:\n- Mod Client: Acasă (căutare rapidă, categorii, AI Estimator, Task rapid), Căutare (listă/hartă meseriași), Lucrările mele (postezi cereri - direct la un meseriaș ales de tine, sau deschise către mai mulți meseriași care pot accepta, iar tu alegi unul), Mesaje (chat cu meseriași, cu opțiuni de mute/block), Profil (informații, adrese, metode de plată, favorite, notificări, setări, ajutor).\n- Mod Meseriaș (accesibil din Profil client → butonul „Mod Meseriaș"): Dashboard (statistici, task-uri rapide cu bonus, echipă dacă ai plan Business), Solicitări (cereri de la clienți, accepți sau refuzi, poți mesaja clientul), Calendar (programări, bară de căutare persoană, adaugi programări noi trimise direct clientului), Mesaje, Profil (biografie editabilă, portofoliu foto, abonament Premium/Business, angajați dacă ai plan Business).\n- Funcții speciale: AI Estimator (estimare cost lucrare pe baza descrierii), Listă materiale cu manoperă separată și atașamente (poze sau facturi PDF, cu calcul automat al costului din factură), Task rapid (cereri mici cu bonus pentru meseriași), programări create direct din conversație.\n\nRăspunde clar, concis și prietenos, în limba română, la orice întrebare despre cum se folosește aplicația sau cum rezolvă o problemă. Dacă întrebarea nu are legătură cu aplicația, redirecționează politicos discuția către subiectul aplicației.\n\nÎntrebarea utilizatorului: ' + question;
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 600,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
-      if (!response.ok) {
-        const errText = await response.text().catch(() => '');
-        throw new Error(`Cerere eșuată (${response.status}) ${errText.slice(0, 150)}`);
-      }
-      const data = await response.json();
-      const raw = (data.content || []).map(b => b.text || '').join('').trim();
+      const raw = (await callAI({ maxTokens: 600, messages: [{ role: 'user', content: prompt }] })).trim();
       setMessages(m => [...m, { from: 'bot', text: raw || 'Nu am găsit un răspuns clar, poți încerca să reformulezi întrebarea?' }]);
     } catch (e) {
       setMessages(m => [...m, { from: 'bot', text: 'A apărut o problemă la conectare (' + (e.message || 'eroare necunoscută') + '). Încearcă din nou în câteva momente.' }]);

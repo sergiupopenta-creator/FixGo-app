@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import { Camera, FileText, Loader2, Plus, Search, X } from 'lucide-react';
 import { C, GRADIENT, MONO, inputStyle } from '../styles/theme';
 import { fmt } from '../utils/helpers';
+import { callAI } from '../utils/aiClient';
+import { compressImage } from '../utils/compressImage';
 import Avatar from '../components/Avatar';
 import BackButton from '../components/BackButton';
 import EmptyState from '../components/EmptyState';
@@ -31,15 +33,12 @@ export default function MaterialsListScreen({ workerId, workerName, clients, ini
     setItems(list => list.filter(i => i.id !== id));
   }
 
-  function handlePickPhoto(e) {
+  async function handlePickPhoto(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setAttachments(list => [...list, { id: Date.now(), type: 'image', url: reader.result, name: file.name }]);
-    };
-    reader.readAsDataURL(file);
     e.target.value = '';
+    const url = await compressImage(file);
+    setAttachments(list => [...list, { id: Date.now(), type: 'image', url, name: file.name }]);
   }
 
   function handlePickPdf(e) {
@@ -54,29 +53,18 @@ export default function MaterialsListScreen({ workerId, workerName, clients, ini
       try {
         const base64Data = dataUrl.split(',')[1];
         const promptText = 'Ești un asistent care extrage articole (materiale/piese) și costurile lor dintr-o factură pentru un meseriaș din România. Analizează documentul PDF atașat și răspunde DOAR cu un obiect JSON valid, fără text suplimentar, fără markdown, fără backticks, fără explicații înainte sau după. Format exact: {"items":[{"name":"string","qty":number,"price":number}]}. "price" este prețul unitar în RON (calculează total împărțit la cantitate dacă factura arată doar valoarea totală pe linie). Dacă nu poți identifica articole individuale, returnează un singur articol cu denumirea "Materiale conform factură", cantitatea 1 și prețul egal cu totalul general al facturii. Extrage lista de materiale și costul lor din această factură.';
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 1500,
-            messages: [
-              {
-                role: 'user',
-                content: [
-                  { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64Data } },
-                  { type: 'text', text: promptText },
-                ],
-              },
-            ],
-          }),
+        const raw = await callAI({
+          maxTokens: 1500,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64Data } },
+                { type: 'text', text: promptText },
+              ],
+            },
+          ],
         });
-        if (!response.ok) {
-          const errText = await response.text().catch(() => '');
-          throw new Error(`Cerere eșuată (${response.status}) ${errText.slice(0, 150)}`);
-        }
-        const data = await response.json();
-        const raw = (data.content || []).map(b => b.text || '').join('');
         const jsonMatch = raw.match(/\{[\s\S]*\}/);
         const clean = (jsonMatch ? jsonMatch[0] : raw).replace(/```json|```/g, '').trim();
         const parsed = JSON.parse(clean);
@@ -120,7 +108,7 @@ export default function MaterialsListScreen({ workerId, workerName, clients, ini
                 <Avatar name={selectedClient.clientName} size={32} />
                 <span className="text-sm" style={{ color: C.text }}>{selectedClient.clientName}</span>
               </div>
-              <button onClick={() => setSelectedClient(null)} style={{ background: 'none', border: 'none', padding: 0 }}>
+              <button onClick={() => setSelectedClient(null)} aria-label="Anulează selecția" style={{ background: 'none', border: 'none', padding: 0 }}>
                 <X size={16} color={C.textMuted} />
               </button>
             </div>
@@ -161,7 +149,7 @@ export default function MaterialsListScreen({ workerId, workerName, clients, ini
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <span className="text-sm font-semibold" style={{ color: C.purple, fontFamily: MONO }}>{fmt(item.qty * item.price)} RON</span>
-              <button onClick={() => removeItem(item.id)} style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center">
+              <button onClick={() => removeItem(item.id)} aria-label={`Șterge ${item.name}`} style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center">
                 <X size={13} color={C.textMuted} />
               </button>
             </div>
@@ -197,7 +185,7 @@ export default function MaterialsListScreen({ workerId, workerName, clients, ini
                   </div>
                 )}
                 <span className="text-xs flex-1 truncate" style={{ color: C.text }}>{att.name}</span>
-                <button onClick={() => removeAttachment(att.id)} style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
+                <button onClick={() => removeAttachment(att.id)} aria-label={`Șterge atașamentul ${att.name}`} style={{ background: C.surface2 }} className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
                   <X size={13} color={C.textMuted} />
                 </button>
               </div>

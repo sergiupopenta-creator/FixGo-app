@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Bot, Camera, Loader2 } from 'lucide-react';
 import { CATEGORIES } from '../data/mockData';
 import { C, GRADIENT, inputStyle } from '../styles/theme';
+import { callAI } from '../utils/aiClient';
 import BackButton from '../components/BackButton';
 import CategoryChip from '../components/CategoryChip';
 import Field from '../components/Field';
@@ -20,23 +21,7 @@ export default function EstimatorScreen({ goBack, push }) {
     try {
       const catName = category ? CATEGORIES.find(c => c.id === category)?.name : 'General';
       const prompt = 'Ești un motor de estimare a prețurilor pentru FixGo, o platformă din România care conectează clienți cu meseriași (electricieni, instalatori, zugravi etc). Primești o descriere a unei lucrări și trebuie să răspunzi DOAR cu un obiect JSON valid, fără text suplimentar, fără markdown, fără backticks, fără explicații înainte sau după. Folosește prețuri realiste de piață din România, în RON. Format exact: {"category":"string","summary":"o propoziție scurtă în română","laborMin":number,"laborMax":number,"materialsMin":number,"materialsMax":number,"otherMin":number,"otherMax":number,"totalMin":number,"totalMax":number}\n\nCategorie sugerată: ' + catName + '. Descrierea lucrării: ' + description;
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1000,
-          messages: [
-            { role: 'user', content: prompt },
-          ],
-        }),
-      });
-      if (!response.ok) {
-        const errText = await response.text().catch(() => '');
-        throw new Error(`Cerere eșuată (${response.status}) ${errText.slice(0, 150)}`);
-      }
-      const data = await response.json();
-      const raw = (data.content || []).map(b => b.text || '').join('');
+      const raw = await callAI({ maxTokens: 1000, messages: [{ role: 'user', content: prompt }] });
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       const clean = (jsonMatch ? jsonMatch[0] : raw).replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(clean);

@@ -1,91 +1,181 @@
-import { useRef, useState } from 'react';
-import { Briefcase, Calendar as CalendarIcon, Home, LayoutGrid, MessageCircle, Plus, Search, User } from 'lucide-react';
+import { lazy, Suspense, useRef, useState } from 'react';
+import { useLocation, useNavigate, matchPath } from 'react-router-dom';
+import { Briefcase, Calendar as CalendarIcon, Home, LayoutGrid, Loader2, MessageCircle, Plus, Search, User } from 'lucide-react';
 import { INITIAL_ADDRESSES, INITIAL_APPOINTMENTS, INITIAL_CHATS, INITIAL_DAILY_EARNINGS, INITIAL_EMPLOYEES, INITIAL_JOBS, INITIAL_NOTIFICATIONS, INITIAL_PAYMENT_METHODS, INITIAL_QUICK_TASKS, INITIAL_REQUESTS, WORKERS } from './data/mockData';
 import { C, GRADIENT } from './styles/theme';
-import AccountScreen from './pages/AccountScreen';
-import AddressesScreen from './pages/AddressesScreen';
+import { ROUTES, buildPath, parseId } from './routes';
+import { usePersistentState } from './utils/usePersistentState';
+import { getSession, clearSession } from './utils/auth';
+// AuthScreen is the very first thing shown, so it stays in the main bundle;
+// every other screen is fetched on demand (see the Suspense boundary below).
+import AuthScreen from './pages/AuthScreen';
 import BottomNav from './components/BottomNav';
-import ChatScreen from './pages/ChatScreen';
-import ClientMaterialsListsScreen from './pages/ClientMaterialsListsScreen';
-import ContactProfileScreen from './pages/ContactProfileScreen';
-import EarningsScreen from './pages/EarningsScreen';
-import EditJobScreen from './pages/EditJobScreen';
-import EditProfileScreen from './pages/EditProfileScreen';
-import EmployeeProfileScreen from './pages/EmployeeProfileScreen';
 import EmptyState from './components/EmptyState';
-import EstimateResultScreen from './pages/EstimateResultScreen';
-import EstimatorScreen from './pages/EstimatorScreen';
-import FavoritesScreen from './pages/FavoritesScreen';
-import HelpScreen from './pages/HelpScreen';
-import HomeScreen from './pages/HomeScreen';
-import JobDetailsScreen from './pages/JobDetailsScreen';
-import JobsScreen from './pages/JobsScreen';
-import LocationPickerScreen from './pages/LocationPickerScreen';
-import MaterialsDetailScreen from './pages/MaterialsDetailScreen';
-import MaterialsHubScreen from './pages/MaterialsHubScreen';
-import MaterialsInvestedScreen from './pages/MaterialsInvestedScreen';
-import MaterialsListScreen from './pages/MaterialsListScreen';
-import MessagesScreen from './pages/MessagesScreen';
-import MyNotesDetailScreen from './pages/MyNotesDetailScreen';
-import MyNotesListScreen from './pages/MyNotesListScreen';
-import MyReviewsScreen from './pages/MyReviewsScreen';
-import NewAppointmentScreen from './pages/NewAppointmentScreen';
-import NotificationsScreen from './pages/NotificationsScreen';
-import PaymentMethodsScreen from './pages/PaymentMethodsScreen';
-import PostJobScreen from './pages/PostJobScreen';
-import ProCalendarScreen from './pages/ProCalendarScreen';
-import ProDashboardScreen from './pages/ProDashboardScreen';
-import ProEmployeesScreen from './pages/ProEmployeesScreen';
-import ProJobsScreen from './pages/ProJobsScreen';
-import ProProfileScreen from './pages/ProProfileScreen';
-import ProRequestsScreen from './pages/ProRequestsScreen';
-import ProStatsScreen from './pages/ProStatsScreen';
-import ProSubscriptionsScreen from './pages/ProSubscriptionsScreen';
-import QuickTaskScreen from './pages/QuickTaskScreen';
-import QuickTasksScreen from './pages/QuickTasksScreen';
-import SearchScreen from './pages/SearchScreen';
-import SettingsScreen from './pages/SettingsScreen';
 import ShareSheet from './components/ShareSheet';
-import WorkerProfileScreen from './pages/WorkerProfileScreen';
+
+const AccountScreen = lazy(() => import('./pages/AccountScreen'));
+const AddressesScreen = lazy(() => import('./pages/AddressesScreen'));
+const ChatScreen = lazy(() => import('./pages/ChatScreen'));
+const ClientMaterialsListsScreen = lazy(() => import('./pages/ClientMaterialsListsScreen'));
+const ContactProfileScreen = lazy(() => import('./pages/ContactProfileScreen'));
+const EarningsScreen = lazy(() => import('./pages/EarningsScreen'));
+const EditJobScreen = lazy(() => import('./pages/EditJobScreen'));
+const EditProfileScreen = lazy(() => import('./pages/EditProfileScreen'));
+const EmployeeProfileScreen = lazy(() => import('./pages/EmployeeProfileScreen'));
+const EstimateResultScreen = lazy(() => import('./pages/EstimateResultScreen'));
+const EstimatorScreen = lazy(() => import('./pages/EstimatorScreen'));
+const FavoritesScreen = lazy(() => import('./pages/FavoritesScreen'));
+const HelpScreen = lazy(() => import('./pages/HelpScreen'));
+const HomeScreen = lazy(() => import('./pages/HomeScreen'));
+const JobDetailsScreen = lazy(() => import('./pages/JobDetailsScreen'));
+const JobsScreen = lazy(() => import('./pages/JobsScreen'));
+const LocationPickerScreen = lazy(() => import('./pages/LocationPickerScreen'));
+const MaterialsDetailScreen = lazy(() => import('./pages/MaterialsDetailScreen'));
+const MaterialsHubScreen = lazy(() => import('./pages/MaterialsHubScreen'));
+const MaterialsInvestedScreen = lazy(() => import('./pages/MaterialsInvestedScreen'));
+const MaterialsListScreen = lazy(() => import('./pages/MaterialsListScreen'));
+const MessagesScreen = lazy(() => import('./pages/MessagesScreen'));
+const MyNotesDetailScreen = lazy(() => import('./pages/MyNotesDetailScreen'));
+const MyNotesListScreen = lazy(() => import('./pages/MyNotesListScreen'));
+const MyReviewsScreen = lazy(() => import('./pages/MyReviewsScreen'));
+const NewAppointmentScreen = lazy(() => import('./pages/NewAppointmentScreen'));
+const NotificationsScreen = lazy(() => import('./pages/NotificationsScreen'));
+const PaymentMethodsScreen = lazy(() => import('./pages/PaymentMethodsScreen'));
+const PostJobScreen = lazy(() => import('./pages/PostJobScreen'));
+const ProCalendarScreen = lazy(() => import('./pages/ProCalendarScreen'));
+const ProDashboardScreen = lazy(() => import('./pages/ProDashboardScreen'));
+const ProEmployeesScreen = lazy(() => import('./pages/ProEmployeesScreen'));
+const ProJobsScreen = lazy(() => import('./pages/ProJobsScreen'));
+const ProProfileScreen = lazy(() => import('./pages/ProProfileScreen'));
+const ProRequestsScreen = lazy(() => import('./pages/ProRequestsScreen'));
+const ProStatsScreen = lazy(() => import('./pages/ProStatsScreen'));
+const ProSubscriptionsScreen = lazy(() => import('./pages/ProSubscriptionsScreen'));
+const QuickTaskScreen = lazy(() => import('./pages/QuickTaskScreen'));
+const QuickTasksScreen = lazy(() => import('./pages/QuickTasksScreen'));
+const SearchScreen = lazy(() => import('./pages/SearchScreen'));
+const SettingsScreen = lazy(() => import('./pages/SettingsScreen'));
+const TermsScreen = lazy(() => import('./pages/TermsScreen'));
+const PrivacyScreen = lazy(() => import('./pages/PrivacyScreen'));
+const WorkerProfileScreen = lazy(() => import('./pages/WorkerProfileScreen'));
 
 export default function App() {
-  const [mode, setMode] = useState('client');
-  const [stack, setStack] = useState([{ screen: 'home', params: {} }]);
-  const [jobs, setJobs] = useState(INITIAL_JOBS);
-  const [chats, setChats] = useState(INITIAL_CHATS);
-  const [requests, setRequests] = useState(INITIAL_REQUESTS);
-  const [employees, setEmployees] = useState(INITIAL_EMPLOYEES);
-  const [plan, setPlan] = useState('Premium');
-  const [favorites, setFavorites] = useState([]);
-  const [materialsLists, setMaterialsLists] = useState({});
-  const [profilePhoto, setProfilePhoto] = useState(null);
-  const [myPortfolio, setMyPortfolio] = useState([]);
-  const [profileInfo, setProfileInfo] = useState({ name: 'Andrei Popescu', email: 'andrei.popescu@email.com', phone: '', bio: '', services: ['Instalații electrice', 'Tablouri electrice'] });
-  const [addresses, setAddresses] = useState(INITIAL_ADDRESSES);
-  const [paymentMethods, setPaymentMethods] = useState(INITIAL_PAYMENT_METHODS);
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
-  const [settings, setSettings] = useState({ pushNotifications: true, emailUpdates: true, darkMode: true });
-  const [clientReviews, setClientReviews] = useState({});
-  const [workerReviews, setWorkerReviews] = useState({});
-  const [quickTasks, setQuickTasks] = useState(INITIAL_QUICK_TASKS);
-  const [location, setLocation] = useState('București');
+  const navigate = useNavigate();
+  const routerLocation = useLocation();
+  const [session, setSession] = useState(() => getSession());
+  // Everything below survives a page refresh (persisted to localStorage) —
+  // only the handful of purely transient UI bits further down stay as plain useState.
+  const [mode, setMode] = usePersistentState('mode', 'client');
+  const [jobs, setJobs] = usePersistentState('jobs', INITIAL_JOBS);
+  const [chats, setChats] = usePersistentState('chats', INITIAL_CHATS);
+  const [requests, setRequests] = usePersistentState('requests', INITIAL_REQUESTS);
+  const [employees, setEmployees] = usePersistentState('employees', INITIAL_EMPLOYEES);
+  const [plan, setPlan] = usePersistentState('plan', 'Premium');
+  const [favorites, setFavorites] = usePersistentState('favorites', []);
+  const [materialsLists, setMaterialsLists] = usePersistentState('materialsLists', {});
+  const [profilePhoto, setProfilePhoto] = usePersistentState('profilePhoto', null);
+  const [myPortfolio, setMyPortfolio] = usePersistentState('myPortfolio', []);
+  const [profileInfo, setProfileInfo] = usePersistentState('profileInfo', { name: 'Andrei Popescu', email: 'andrei.popescu@email.com', phone: '', bio: '', services: ['Instalații electrice', 'Tablouri electrice'] });
+  const [addresses, setAddresses] = usePersistentState('addresses', INITIAL_ADDRESSES);
+  const [paymentMethods, setPaymentMethods] = usePersistentState('paymentMethods', INITIAL_PAYMENT_METHODS);
+  const [notifications, setNotifications] = usePersistentState('notifications', INITIAL_NOTIFICATIONS);
+  const [settings, setSettings] = usePersistentState('settings', { pushNotifications: true, emailUpdates: true, darkMode: true });
+  const [clientReviews, setClientReviews] = usePersistentState('clientReviews', {});
+  const [workerReviews, setWorkerReviews] = usePersistentState('workerReviews', {});
+  const [quickTasks, setQuickTasks] = usePersistentState('quickTasks', INITIAL_QUICK_TASKS);
+  const [location, setLocation] = usePersistentState('location', 'București');
+  const [myMaterialLists, setMyMaterialLists] = usePersistentState('myMaterialLists', []);
+  const [dailyEarnings, setDailyEarnings] = usePersistentState('dailyEarnings', INITIAL_DAILY_EARNINGS);
+  const [appointments, setAppointments] = usePersistentState('appointments', INITIAL_APPOINTMENTS);
+
+  // Transient UI state — deliberately NOT persisted (would be confusing to restore after a refresh).
+  const [lastEstimate, setLastEstimate] = useState(null);
+  const [viewingMaterialsMessage, setViewingMaterialsMessage] = useState(null);
   const [shareSheetWorker, setShareSheetWorker] = useState(null);
-  const [myMaterialLists, setMyMaterialLists] = useState([]);
-  const [dailyEarnings, setDailyEarnings] = useState(INITIAL_DAILY_EARNINGS);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [swiping, setSwiping] = useState(false);
   const touchStartRef = useRef({ x: 0, y: 0, active: false });
-  const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
 
-  const current = stack[stack.length - 1];
+  // Resolve the current screen + its params from the real URL (see src/routes.js),
+  // instead of an in-memory navigation stack — this is what makes browser
+  // back/forward and shareable/refreshable links work.
+  const routeQuery = new URLSearchParams(routerLocation.search);
+  let matchedScreen = 'home';
+  let routeParams = {};
+  for (const route of ROUTES) {
+    const match = matchPath({ path: route.path, end: true }, routerLocation.pathname);
+    if (match) { matchedScreen = route.screen; routeParams = match.params; break; }
+  }
+
+  let currentScreen = matchedScreen;
+  let currentParams = {};
+  switch (matchedScreen) {
+    case 'search':
+      currentParams = { category: routeQuery.get('category') || undefined };
+      break;
+    case 'worker':
+      currentParams = { worker: WORKERS.find(w => w.id === parseId(routeParams.workerId)) };
+      if (!currentParams.worker) currentScreen = 'home';
+      break;
+    case 'postJob': {
+      const workerId = routeQuery.get('workerId');
+      currentParams = { worker: workerId ? WORKERS.find(w => w.id === parseId(workerId)) : undefined };
+      break;
+    }
+    case 'jobDetails':
+      currentParams = { job: { id: parseId(routeParams.jobId) } };
+      break;
+    case 'editJob':
+      currentParams = { job: jobs.find(j => j.id === parseId(routeParams.jobId)) };
+      if (!currentParams.job) currentScreen = 'home';
+      break;
+    case 'chat':
+      currentParams = { workerId: parseId(routeParams.workerId), workerName: routeQuery.get('name') || undefined };
+      break;
+    case 'materialsList':
+      currentParams = { workerId: parseId(routeParams.workerId), workerName: routeQuery.get('name') || undefined };
+      break;
+    case 'materialsDetail':
+      currentParams = { message: viewingMaterialsMessage };
+      break;
+    case 'estimateResult':
+      currentParams = { result: lastEstimate };
+      break;
+    case 'newAppointment':
+      currentParams = {
+        dateKey: routeQuery.get('date') || undefined,
+        dayLabel: routeQuery.get('dayLabel') || undefined,
+        clientId: routeQuery.get('clientId') || undefined,
+        clientName: routeQuery.get('clientName') || undefined,
+      };
+      break;
+    case 'proJobs':
+      currentParams = { tab: routeQuery.get('tab') || undefined };
+      break;
+    case 'employeeProfile':
+      currentParams = { employeeId: parseId(routeParams.employeeId) };
+      break;
+    case 'contactProfile':
+      currentParams = { name: routeQuery.get('name') || undefined, clientId: parseId(routeParams.clientId) };
+      break;
+    case 'myNotesDetail':
+      currentParams = { listId: parseId(routeParams.listId) };
+      break;
+    default:
+      currentParams = {};
+  }
+  const current = { screen: currentScreen, params: currentParams };
   const hasUnreadNotifications = notifications.some(n => !n.read);
 
-  function push(screen, params = {}) { setStack(s => [...s, { screen, params }]); }
-  function goBack() { setStack(s => (s.length > 1 ? s.slice(0, -1) : s)); }
-  function navTab(screen) { setStack([{ screen, params: {} }]); }
+  function push(screen, params = {}) {
+    if (screen === 'estimateResult') setLastEstimate(params.result);
+    if (screen === 'materialsDetail') setViewingMaterialsMessage(params.message);
+    navigate(buildPath(screen, params));
+  }
+  function goBack() { navigate(-1); }
+  function navTab(screen) { navigate(buildPath(screen, {})); }
 
   function handleTouchStart(e) {
-    if (stack.length <= 1) return;
+    if (routerLocation.pathname === '/') return;
     const touch = e.touches[0];
     const rect = e.currentTarget.getBoundingClientRect();
     const relativeX = touch.clientX - rect.left;
@@ -116,7 +206,16 @@ export default function App() {
   }
   function switchMode(newMode) {
     setMode(newMode);
-    setStack([{ screen: newMode === 'pro' ? 'proDashboard' : 'home', params: {} }]);
+    navigate(buildPath(newMode === 'pro' ? 'proDashboard' : 'home', {}));
+  }
+  function handleAuthenticated({ name, email }) {
+    setProfileInfo(p => ({ ...p, name, email }));
+    setSession(email);
+    navigate('/');
+  }
+  function handleLogout() {
+    clearSession();
+    setSession(null);
   }
   function acceptRequest(id) { setRequests(r => r.map(x => x.id === id ? { ...x, status: 'Acceptată' } : x)); }
   function declineRequest(id) { setRequests(r => r.map(x => x.id === id ? { ...x, status: 'Refuzată' } : x)); }
@@ -386,7 +485,7 @@ export default function App() {
     case 'quickTasks':
       body = <QuickTasksScreen quickTasks={quickTasks} onClaim={claimQuickTask} push={push} goBack={goBack} />; break;
     case 'account':
-      body = <AccountScreen push={push} onSwitchMode={() => switchMode('pro')} profilePhoto={profilePhoto} onPhotoChange={setProfilePhoto} profileInfo={profileInfo} />; break;
+      body = <AccountScreen push={push} onSwitchMode={() => switchMode('pro')} profilePhoto={profilePhoto} onPhotoChange={setProfilePhoto} profileInfo={profileInfo} onLogout={handleLogout} />; break;
     case 'editProfile':
       body = <EditProfileScreen profile={profileInfo} onSave={setProfileInfo} goBack={goBack} />; break;
     case 'addresses':
@@ -398,9 +497,13 @@ export default function App() {
     case 'notifications':
       body = <NotificationsScreen notifications={notifications} onMarkRead={markNotificationsRead} push={push} goBack={goBack} />; break;
     case 'settings':
-      body = <SettingsScreen settings={settings} onChange={updateSetting} goBack={goBack} />; break;
+      body = <SettingsScreen settings={settings} onChange={updateSetting} goBack={goBack} push={push} />; break;
     case 'help':
       body = <HelpScreen goBack={goBack} />; break;
+    case 'terms':
+      body = <TermsScreen goBack={goBack} />; break;
+    case 'privacy':
+      body = <PrivacyScreen goBack={goBack} />; break;
     case 'proDashboard':
       body = <ProDashboardScreen requests={requests} push={push} plan={plan} employees={employees} profileInfo={profileInfo} hasUnreadNotifications={hasUnreadNotifications} quickTasks={quickTasks} />; break;
     case 'proRequests':
@@ -478,14 +581,20 @@ export default function App() {
           onSwitchMode={() => switchMode('client')}
           profileInfo={profileInfo}
           onUpdateBio={(bio) => setProfileInfo(p => ({ ...p, bio }))}
+          onUpdateCoverPhoto={(coverPhoto) => setProfileInfo(p => ({ ...p, coverPhoto }))}
+          onUpdateCompanyName={(companyName) => setProfileInfo(p => ({ ...p, companyName }))}
           onAddService={addService}
           onRemoveService={removeService}
+          onLogout={handleLogout}
         />
       );
       break;
     default:
       body = <HomeScreen push={push} firstName={profileInfo.name.split(' ')[0]} hasUnreadNotifications={hasUnreadNotifications} location={location} />;
   }
+
+  const loggedIn = !!session;
+  if (!loggedIn) body = <AuthScreen onAuthenticated={handleAuthenticated} />;
 
   return (
     <div style={{
@@ -517,10 +626,12 @@ export default function App() {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {body}
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center py-20"><Loader2 size={22} className="animate-spin" color={C.textFaint} /></div>}>
+            {body}
+          </Suspense>
         </div>
-        {current.screen === 'jobs' && (
-          <button onClick={() => push('postJob', {})} style={{
+        {loggedIn && current.screen === 'jobs' && (
+          <button onClick={() => push('postJob', {})} aria-label="Postează o lucrare nouă" style={{
             background: GRADIENT, position: 'absolute', bottom: 78, right: 18, width: 52, height: 52,
             borderRadius: 9999, boxShadow: '0 8px 24px rgba(249,115,22,0.4)', zIndex: 20,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -528,7 +639,7 @@ export default function App() {
             <Plus size={22} color="#fff" />
           </button>
         )}
-        {showBottomNav && <BottomNav tabs={tabs} active={current.screen} onTab={navTab} />}
+        {loggedIn && showBottomNav && <BottomNav tabs={tabs} active={current.screen} onTab={navTab} />}
         {shareSheetWorker && <ShareSheet worker={shareSheetWorker} onClose={() => setShareSheetWorker(null)} />}
       </div>
     </div>

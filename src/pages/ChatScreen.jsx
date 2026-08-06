@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Ban, Bell, BellOff, Briefcase, Calendar as CalendarIcon, Camera, ChevronRight, ClipboardList, FileText, MapPin, MoreVertical, Send, User } from 'lucide-react';
 import { C, GRADIENT, MONO, inputStyle } from '../styles/theme';
 import { fmt } from '../utils/helpers';
+import { compressImage } from '../utils/compressImage';
 import Avatar from '../components/Avatar';
 import BackButton from '../components/BackButton';
 
@@ -18,13 +19,11 @@ export default function ChatScreen({ chat, goBack, onSend, onOpenMaterials, onOp
     setText('');
   }
 
-  function handlePickImage(e) {
+  async function handlePickImage(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => { onSend({ type: 'image', url: reader.result }); };
-    reader.readAsDataURL(file);
     e.target.value = '';
+    onSend({ type: 'image', url: await compressImage(file) });
   }
 
   return (
@@ -44,14 +43,14 @@ export default function ChatScreen({ chat, goBack, onSend, onOpenMaterials, onOp
           </div>
         </button>
         {onCreateAppointment && (
-          <button onClick={onCreateAppointment} style={{ background: C.surface2 }} className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
+          <button onClick={onCreateAppointment} aria-label="Propune o programare" style={{ background: C.surface2 }} className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
             <CalendarIcon size={14} color={C.text} />
           </button>
         )}
-        <button onClick={onOpenMaterials} style={{ background: C.surface2 }} className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
+        <button onClick={onOpenMaterials} aria-label="Listă materiale" style={{ background: C.surface2 }} className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
           <ClipboardList size={14} color={C.text} />
         </button>
-        <button onClick={() => setMenuOpen(o => !o)} style={{ background: C.surface2 }} className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
+        <button onClick={() => setMenuOpen(o => !o)} aria-label="Mai multe opțiuni" style={{ background: C.surface2 }} className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
           <MoreVertical size={16} color={C.text} />
         </button>
         {menuOpen && (
@@ -181,7 +180,7 @@ export default function ChatScreen({ chat, goBack, onSend, onOpenMaterials, onOp
         <>
           <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePickImage} />
           <div className="px-4 py-3 flex items-center gap-2 flex-shrink-0" style={{ borderTop: `1px solid ${C.border}` }}>
-            <button onClick={() => fileInputRef.current?.click()} style={{ background: C.surface2 }} className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0">
+            <button onClick={() => fileInputRef.current?.click()} aria-label="Atașează o poză" style={{ background: C.surface2 }} className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0">
               <Camera size={16} color={C.text} />
             </button>
             <input
@@ -191,7 +190,7 @@ export default function ChatScreen({ chat, goBack, onSend, onOpenMaterials, onOp
               placeholder="Scrie un mesaj..."
               style={{ ...inputStyle, borderRadius: 9999 }}
             />
-            <button onClick={sendText} style={{ background: GRADIENT }} className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0">
+            <button onClick={sendText} aria-label="Trimite mesajul" style={{ background: GRADIENT }} className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0">
               <Send size={15} color="#fff" />
             </button>
           </div>

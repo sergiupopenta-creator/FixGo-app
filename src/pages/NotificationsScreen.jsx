@@ -4,6 +4,7 @@ import BackButton from '../components/BackButton';
 import EmptyState from '../components/EmptyState';
 
 export default function NotificationsScreen({ notifications, onMarkRead, push, goBack }) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- mark-as-read should run once, on mount
   useEffect(() => { onMarkRead(); }, []);
   return (
     <div className="px-5 pt-2 pb-6">

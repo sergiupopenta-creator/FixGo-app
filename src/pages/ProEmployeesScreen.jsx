@@ -35,7 +35,7 @@ export default function ProEmployeesScreen({ employees, goBack, onAdd, push }) {
                 <div className="text-xs truncate" style={{ color: C.textMuted }}>{emp.role}</div>
               </div>
             </button>
-            <button onClick={() => push('chat', { workerId: `employee-${emp.id}`, workerName: emp.name })} style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
+            <button onClick={() => push('chat', { workerId: `employee-${emp.id}`, workerName: emp.name })} aria-label={`Trimite mesaj către ${emp.name}`} style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
               <MessageCircle size={14} color={C.text} />
             </button>
             <EmployeeStatusBadge status={emp.status} />

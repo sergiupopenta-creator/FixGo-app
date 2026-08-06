@@ -27,10 +27,10 @@ export default function WorkerProfileScreen({ worker, push, goBack, favorites, s
       <div className="px-5 pt-2 pb-3 flex items-center justify-between">
         <BackButton onClick={goBack} />
         <div className="flex gap-2">
-          <button onClick={() => setFavorites(f => isFav ? f.filter(id => id !== worker.id) : [...f, worker.id])} style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="w-9 h-9 rounded-full flex items-center justify-center">
+          <button onClick={() => setFavorites(f => isFav ? f.filter(id => id !== worker.id) : [...f, worker.id])} aria-label={isFav ? 'Elimină din favorite' : 'Adaugă la favorite'} style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="w-9 h-9 rounded-full flex items-center justify-center">
             <Heart size={16} color={isFav ? C.red : C.text} fill={isFav ? C.red : 'none'} />
           </button>
-          <button onClick={() => onOpenShare(worker)} style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="w-9 h-9 rounded-full flex items-center justify-center">
+          <button onClick={() => onOpenShare(worker)} aria-label="Distribuie profilul" style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="w-9 h-9 rounded-full flex items-center justify-center">
             <Share2 size={16} color={C.text} />
           </button>
         </div>

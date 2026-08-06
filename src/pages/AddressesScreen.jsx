@@ -32,7 +32,7 @@ export default function AddressesScreen({ addresses, onAdd, onRemove, goBack }) 
               <div className="text-sm font-semibold" style={{ color: C.text }}>{a.label}</div>
               <div className="text-xs truncate" style={{ color: C.textMuted }}>{a.address}</div>
             </div>
-            <button onClick={() => onRemove(a.id)} style={{ background: C.surface2 }} className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
+            <button onClick={() => onRemove(a.id)} aria-label={`Șterge adresa ${a.label}`} style={{ background: C.surface2 }} className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
               <Trash2 size={14} color={C.red} />
             </button>
           </div>

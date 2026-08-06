@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react';
 import { Camera, ChevronRight, ClipboardList, CreditCard, HelpCircle, Home, LogOut, Pencil, Plus, Settings, TrendingUp, User, Users, X } from 'lucide-react';
 import { C, GRADIENT, inputStyle } from '../styles/theme';
+import { compressImage } from '../utils/compressImage';
 import EditableAvatar from '../components/EditableAvatar';
 import MyPortfolioGrid from '../components/MyPortfolioGrid';
 import Rating from '../components/Rating';
 
-export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChange, portfolio, onAddPortfolioPhoto, onRemovePortfolioPhoto, onSwitchMode, profileInfo, onUpdateBio, onUpdateCoverPhoto, onUpdateCompanyName, onAddService, onRemoveService }) {
+export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChange, portfolio, onAddPortfolioPhoto, onRemovePortfolioPhoto, onSwitchMode, profileInfo, onUpdateBio, onUpdateCoverPhoto, onUpdateCompanyName, onAddService, onRemoveService, onLogout }) {
   const [editingBio, setEditingBio] = useState(false);
   const [bioText, setBioText] = useState(profileInfo.bio || '');
   const [newService, setNewService] = useState('');
@@ -33,13 +34,11 @@ export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChan
     setNewService('');
   }
 
-  function handleCoverPick(e) {
+  async function handleCoverPick(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => onUpdateCoverPhoto(reader.result);
-    reader.readAsDataURL(file);
     e.target.value = '';
+    onUpdateCoverPhoto(await compressImage(file, { maxDimension: 1280 }));
   }
 
   function saveCompanyName() {
@@ -59,7 +58,7 @@ export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChan
             </span>
           </div>
         )}
-        <button onClick={() => coverInputRef.current?.click()} style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.55)' }} className="w-8 h-8 rounded-full flex items-center justify-center">
+        <button onClick={() => coverInputRef.current?.click()} aria-label="Schimbă poza de copertă" style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.55)' }} className="w-8 h-8 rounded-full flex items-center justify-center">
           <Camera size={15} color="#fff" />
         </button>
         <input ref={coverInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleCoverPick} />
@@ -95,7 +94,7 @@ export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChan
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-sm font-semibold" style={{ color: C.text }}>Biografie</h2>
           {!editingBio && (
-            <button onClick={() => { setBioText(profileInfo.bio || ''); setEditingBio(true); }} style={{ background: 'none', border: 'none', padding: 0 }}>
+            <button onClick={() => { setBioText(profileInfo.bio || ''); setEditingBio(true); }} aria-label="Editează biografia" style={{ background: 'none', border: 'none', padding: 0 }}>
               <Pencil size={14} color={C.purple} />
             </button>
           )}
@@ -126,7 +125,7 @@ export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChan
             {profileInfo.services.map((s, i) => (
               <span key={i} style={{ background: C.surface2, border: `1px solid ${C.border}` }} className="flex items-center gap-1.5 text-xs pl-3 pr-2 py-1.5 rounded-full">
                 <span style={{ color: C.text }}>{s}</span>
-                <button onClick={() => onRemoveService(i)} style={{ background: 'none', border: 'none', padding: 0 }} className="flex items-center justify-center">
+                <button onClick={() => onRemoveService(i)} aria-label={`Șterge serviciul ${s}`} style={{ background: 'none', border: 'none', padding: 0 }} className="flex items-center justify-center">
                   <X size={11} color={C.textMuted} />
                 </button>
               </span>
@@ -165,7 +164,7 @@ export default function ProProfileScreen({ push, plan, profilePhoto, onPhotoChan
       <button onClick={onSwitchMode} style={{ background: C.surface, border: `1px solid ${C.border}` }} className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold mb-2">
         <Home size={15} color={C.text} /> <span style={{ color: C.text }}>Comută la Mod Client</span>
       </button>
-      <button className="w-full flex items-center gap-3 py-3.5 text-left">
+      <button onClick={onLogout} className="w-full flex items-center gap-3 py-3.5 text-left">
         <LogOut size={17} color={C.red} />
         <span className="text-sm" style={{ color: C.red }}>Deconectare</span>
       </button>

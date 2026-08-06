@@ -1,0 +1,8 @@
+name = "fixgo-ai-proxy"
+main = "fixgo-ai-proxy.js"
+compatibility_date = "2024-01-01"
+
+# Once you know your GitHub Pages URL, uncomment and set this so only your
+# site can call the worker from a browser:
+# [vars]
+# ALLOWED_ORIGIN = "https://<your-github-username>.github.io"
